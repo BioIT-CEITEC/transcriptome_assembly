@@ -53,7 +53,7 @@
             "operand": "equal",
             "negation": false,
             "values": {
-              "genome_guided": true
+              "genome_guided": true,
               "external_reference": false
             }
           }
