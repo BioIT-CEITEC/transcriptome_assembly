@@ -1,0 +1,40 @@
+{
+  "workflow_description": {
+    "name": "transcriptome_assembly",
+    "version": 1.0,
+    "label": "Transcriptome assembly",
+    "type": "transcriptome_assembly",
+    "inputs": "raw_fastq/{sample}*fastq.gz",
+    "outputs": [
+      "results/*",
+      "logs/*"
+    ],
+    "report_index": "results/TA_multiqc_report.html",
+    "reports": [
+      "results/TA_multiqc_report.html"
+    ]
+  },
+  "general_params": [
+    "entity_name",
+    "sample_name"
+  ],
+  "requested_params": [
+    "is_paired",
+    "UMI"
+  ],
+  "gui_params": {
+    
+    "detailed": {
+      "trinity_strandness": {
+        "label": "Trinity tag for reads strandness",
+        "type": "string",
+        "default": "RF"
+      },
+      "trinity_kmers": {
+        "label": "k-mer values to use in Trinity",
+        "type": "string",
+        "default": "21;25;31"
+      }
+    }
+  }
+}
