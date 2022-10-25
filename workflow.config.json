@@ -54,12 +54,6 @@
             "negation": false,
             "values": {
               "genome_guided": true
-            }
-          },
-          "relevance": {
-            "operand": "equal",
-            "negation": false,
-            "values": {
               "external_reference": false
             }
           }
