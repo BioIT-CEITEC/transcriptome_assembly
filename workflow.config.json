@@ -7,6 +7,7 @@
     "inputs": "raw_fastq/{sample}*fastq.gz",
     "outputs": [
       "results/*",
+      "preprocess/*",
       "logs/*"
     ],
     "report_index": "results/TA_multiqc_report.html",
@@ -24,24 +25,24 @@
   ],
   "gui_params": {
     "primary": {
+      "RNAseq_type" : {
+        "label": "RNAseq type",
+        "type": "enum",
+        "default": "classic_rev",
+        "list": {
+          "classic_unstd": "Classic Unstranded",
+          "classic_fwd": "Classic Forward",
+          "classic_rev": "Classic Reverse",
+          "quant_fwd": "QuantSeq FWD",
+          "quant_rev": "QuantSeq REV",
+          "sense": "Lexogen SENSE",
+          "corall": "Lexogen CORALL"
+        }
+      },
       "genome_guided": {
         "label": "Use genome-guided assembly?",
         "type": "bool",
         "default": false
-      },
-      "external_reference": {
-        "label": "Use external reference",
-        "type": "bool",
-        "default": false,
-        "conditions": {
-          "relevance": {
-            "operand": "equal",
-            "negation": false,
-            "values": {
-              "genome_guided": true
-            }
-          }
-        }
       },
       "reference": {
         "label": "Genomic Reference",
@@ -58,16 +59,228 @@
             }
           }
         }
+      },
+      "external_reference": {
+        "label": "Use another reference instead",
+        "type": "bool",
+        "default": false,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true
+            }
+          }
+        }
       }
     },
     "detailed": {
+      "trim_adapters": {
+        "label": "Trim adapters (preprocess)",
+        "type": "string",
+        "default": ""
+      },
+      "trim_left1": {
+        "label": "Trim left 1 (preprocess)",
+        "type": "int",
+        "default": 0,
+        "conditions": {
+          "value": {
+            "RNAseq_type": {
+              "quant_fwd": 12,
+              "sense": 9
+            },
+            "UMI": {
+              "Quantseq FWD": 6
+            }
+          }
+        }
+      },
+      "trim_left2": {
+        "label": "Trim left 2 (preprocess)",
+        "type": "int",
+        "default": 0,
+        "conditions": {
+          "value": {
+            "RNAseq_type": {
+              "quant_rev": 12,
+              "sense": 6
+            }
+          }
+        }
+      },
+      "trim_right1": {
+        "label": "Trim right 1 (preprocess)",
+        "type": "int",
+        "default": 0
+      },
+      "trim_right2": {
+        "label": "Trim right 2 (preprocess)",
+        "type": "int",
+        "default": 0,
+        "conditions": {
+          "value": {
+            "UMI": {
+              "CORALL": 9
+            }
+          }
+        }
+      },
+      "min_length": {
+        "label": "Min length (preprocess)",
+        "type": "int",
+        "default": 35
+      },
+      "strandness": {
+        "label": "Strandness (alignment)",
+        "type": "string",
+        "default": "unstr",
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true
+            }
+          },
+          "value": {
+            "RNAseq_type": {
+              "classic_fwd": "fwd",
+              "classic_rev": "rev",
+              "quant_fwd": "fwd",
+              "quant_rev": "fwd",
+              "sense": "rev"
+            }
+          }
+        }
+      },
+      "max_intron": {
+        "label": "Max intron (alignment)",
+        "type": "int",
+        "default": 1000000,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true
+            }
+          }
+        }
+      },
+      "map_score": {
+        "label": "Map score (alignment)",
+        "type": "string",
+        "default": "0.66",
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true
+            }
+          }
+        }
+      },
+      "map_perc": {
+        "label": "Map perc (alignment)",
+        "type": "string",
+        "default": "0.66",
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true
+            }
+          }
+        }
+      },
+      "perc_mismatch": {
+        "label": "Perc mismatch (alignment)",
+        "type": "string",
+        "default": "0.1",
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true
+            }
+          }
+        }
+      },
+      "mark_duplicates": {
+        "label": "Mark duplicates (alignment)",
+        "type": "bool",
+        "default": false,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true
+            }
+          }
+        }
+      },
+      "umi_usage": {
+        "label": "UMI usage (alignment)",
+        "type": "enum",
+        "default": "mark_duplicates",
+        "list": {
+          "no": "Don't use UMI",
+          "mark_duplicates": "Mark duplicates"
+        },
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true,
+              "mark_duplicates": true
+            }
+          }
+        }
+      },
+      "remove_duplicates": {
+        "label": "Remove duplicates (alignment)",
+        "type": "bool",
+        "default": false,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true,
+              "mark_duplicates": true
+            }
+          }
+        }
+      },
+      "keep_not_markDups_bam": {
+        "label": "Keep not_markDups_bam files (alignment)",
+        "type": "bool",
+        "default": false,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true,
+              "mark_duplicates": true
+            }
+          }
+        }
+      },
       "trinity_strandness": {
-        "label": "Trinity tag for reads strandness",
+        "label": "Reads strandness tag (Trinity)",
         "type": "string",
         "default": "RF"
       },
       "trinity_kmers": {
-        "label": "k-mer values to use in Trinity",
+        "label": "k-mer values to use (Trinity)",
         "type": "string",
         "default": "21;25;31"
       }
