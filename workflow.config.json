@@ -23,7 +23,49 @@
     "UMI"
   ],
   "gui_params": {
-    
+    "primary": {
+      "genome_guided": {
+        "label": "Use genome-guided assembly?",
+        "type": "bool",
+        "default": false
+      },
+      "external_reference": {
+        "label": "Use external reference",
+        "type": "bool",
+        "default": false,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true
+            }
+          }
+        }
+      },
+      "reference": {
+        "label": "Genomic Reference",
+        "type": "enum",
+        "default": ##INCLUDE:reference_info/default_reference.json##,
+        "list": ##INCLUDE:reference_info/reference2.json##,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true
+            }
+          },
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "external_reference": false
+            }
+          }
+        }
+      }
+    },
     "detailed": {
       "trinity_strandness": {
         "label": "Trinity tag for reads strandness",
