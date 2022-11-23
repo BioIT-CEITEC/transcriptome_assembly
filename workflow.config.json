@@ -81,11 +81,23 @@
         "type": "string",
         "default": ""
       },
+      "trim_individually": {
+        "label": "Trim samples individually (preprocess)",
+        "type": "bool",
+        "default": false
+      },
       "trim_left1": {
         "label": "Trim left 1 (preprocess)",
         "type": "int",
         "default": 0,
         "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "trim_individually": false
+            }
+          },
           "value": {
             "RNAseq_type": {
               "quant_fwd": 12,
@@ -102,6 +114,13 @@
         "type": "int",
         "default": 0,
         "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "trim_individually": false
+            }
+          },
           "value": {
             "RNAseq_type": {
               "quant_rev": 12,
@@ -113,13 +132,29 @@
       "trim_right1": {
         "label": "Trim right 1 (preprocess)",
         "type": "int",
-        "default": 0
+        "default": 0,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "trim_individually": false
+            }
+          }
+        }
       },
       "trim_right2": {
         "label": "Trim right 2 (preprocess)",
         "type": "int",
         "default": 0,
         "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "trim_individually": false
+            }
+          },
           "value": {
             "UMI": {
               "CORALL": 9
@@ -283,6 +318,66 @@
         "label": "k-mer values to use (Trinity)",
         "type": "string",
         "default": "21;25;31"
+      }
+    },
+    "samples": {
+      "trim_left1": {
+        "label": "Trim left R1",
+        "type": "int",
+        "default": 0,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "trim_individually": true
+            }
+          }
+        }
+      },
+      "trim_left2": {
+        "label": "Trim left R2",
+        "type": "int",
+        "default": 0,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "trim_individually": true,
+              "is_paired": true
+            }
+          }
+        }
+      },
+      "trim_right1": {
+        "label": "Trim right R1",
+        "type": "int",
+        "default": 0,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "trim_individually": true
+            }
+          }
+        }
+      },
+      "trim_right2": {
+        "label": "Trim right R2",
+        "type": "int",
+        "default": 0,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "trim_individually": true,
+              "is_paired": true
+            }
+          }
+        }
       }
     }
   }
