@@ -344,8 +344,7 @@
             "operand": "equal",
             "negation": false,
             "values": {
-              "trim_individually": true,
-              "is_paired": true
+              "trim_individually": true
             }
           }
         }
@@ -373,8 +372,7 @@
             "operand": "equal",
             "negation": false,
             "values": {
-              "trim_individually": true,
-              "is_paired": true
+              "trim_individually": true
             }
           }
         }
