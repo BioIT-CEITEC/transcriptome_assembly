@@ -1,0 +1,5 @@
+sp:
+   jellyfish:
+      fn: '*.histo'
+   busco:
+      fn: '*short_summary*'

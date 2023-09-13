@@ -5,6 +5,7 @@ import os
 import sys
 import math
 import subprocess
+import uuid
 from snakemake.shell import shell
 
 ## NOTE: there was a necessary change inside script /mnt/ssd/ssd_1/snakemake/.snakemake/conda/798d548e/opt/trinity-2.8.5/util/misc/plot_strand_specificity_dist_by_quantile.Rscript
@@ -30,55 +31,76 @@ if snakemake.params.use_genome:
     if snakemake.params.jaccard_clip:
         additional += " --jaccard_clip"
 else:
-    input_files = " --seqType fq --left " + snakemake.input.r1 + " --right " + snakemake.input.r2
+    input_files = " --seqType fq"
+    if snakemake.params.paired:
+        input_files += " --left " + snakemake.input.r1[0] + " --right " + snakemake.input.r1[1]
+    else:
+        input_files += " --single " + snakemake.input.r1[0]
     additional = ""
 
 strandness = "" if snakemake.params.stranded == "" else " --SS_lib_type "+snakemake.params.stranded
 
+workdir = os.path.join(snakemake.params.tmpd, "trinity_"+uuid.uuid4().hex)
+
+# command = "$(which time) Trinity" + \
+#                input_files + \
+#                " --min_contig_length " + str(snakemake.params.min_contig_len) + \
+#                " --output " + os.path.dirname(snakemake.output.fasta) + \
+#                " --workdir " + workdir + \
+#                " --KMER_SIZE " + str(snakemake.wildcards.kmer) + \
+#                " --min_kmer_cov " + str(snakemake.params.min_kmer_cov) + \
+#                " --CPU " + str(snakemake.threads) + \
+#                " --max_memory " + str(snakemake.resources.mem) + "G" + \
+#                strandness + \
+#                additional + \
+#                " >> " + snakemake.log.run + " 2>&1 "
 command = "$(which time) Trinity" + \
                input_files + \
                " --min_contig_length " + str(snakemake.params.min_contig_len) + \
-               " --output " + os.path.dirname(snakemake.output.fasta) + \
-               " --workdir " + os.path.dirname(snakemake.output.fasta) + \
+               " --output " + workdir + \
                " --KMER_SIZE " + str(snakemake.wildcards.kmer) + \
                " --min_kmer_cov " + str(snakemake.params.min_kmer_cov) + \
                " --CPU " + str(snakemake.threads) + \
                " --max_memory " + str(snakemake.resources.mem) + "G" + \
                strandness + \
                additional + \
-               " >> " + snakemake.log.run + " 2>&1 "
+               " >> " + snakemake.log.run + " 2>&1 && mkdir -p "+os.path.dirname(snakemake.output.fasta)+" 2>> "+snakemake.log.run
 f = open(snakemake.log.run, 'at')
 f.write("## COMMAND: "+command+"\n")
 f.close()
 shell(command)
 
 if not snakemake.params.use_genome:
-    command = "mv " + os.path.dirname(snakemake.output.fasta) + "/Trinity.fasta " + snakemake.output.fasta + " >> " + snakemake.log.run + " 2>&1"
+    # command = "mv " + os.path.dirname(snakemake.output.fasta) + "/Trinity.fasta " + snakemake.output.fasta + " >> " + snakemake.log.run + " 2>&1"
+    command = "mv " + os.path.join(workdir,"Trinity.fasta") + " " + snakemake.output.fasta + " >> " + snakemake.log.run + " 2>&1"
 else:
-    command = "mv " + os.path.dirname(snakemake.output.fasta) + "/Trinity-GG.fasta " + snakemake.output.fasta + " >> " + snakemake.log.run + " 2>&1"
+    # command = "mv " + os.path.dirname(snakemake.output.fasta) + "/Trinity-GG.fasta " + snakemake.output.fasta + " >> " + snakemake.log.run + " 2>&1"
+    command = "mv " + os.path.join(workdir,"Trinity-GG.fasta") + " " + snakemake.output.fasta + " >> " + snakemake.log.run + " 2>&1"
 f = open(snakemake.log.run, 'at')
 f.write("## COMMAND: "+command+"\n")
 f.close()
 shell(command)
 
 if not snakemake.params.use_genome:
-    command = "mv " + os.path.dirname(snakemake.output.fasta) + "/Trinity.fasta.gene_trans_map " + snakemake.output.gtm + " >> " + snakemake.log.run + " 2>&1"
+    # command = "mv " + os.path.dirname(snakemake.output.fasta) + "/Trinity.fasta.gene_trans_map " + snakemake.output.gtm + " >> " + snakemake.log.run + " 2>&1"
+    command = "mv " + os.path.join(workdir,"Trinity.fasta.gene_trans_map") + " " + snakemake.output.gtm + " >> " + snakemake.log.run + " 2>&1"
 else:
-    command = "mv " + os.path.dirname(snakemake.output.fasta) + "/Trinity-GG.fasta.gene_trans_map " + snakemake.output.gtm + " >> " + snakemake.log.run + " 2>&1"
+    # command = "mv " + os.path.dirname(snakemake.output.fasta) + "/Trinity-GG.fasta.gene_trans_map " + snakemake.output.gtm + " >> " + snakemake.log.run + " 2>&1"
+    command = "mv " + os.path.join(workdir,"Trinity-GG.fasta.gene_trans_map") + " " + snakemake.output.gtm + " >> " + snakemake.log.run + " 2>&1"
 f = open(snakemake.log.run, 'at')
 f.write("## COMMAND: "+command+"\n")
 f.close()
 shell(command)
 
-# cleaning of assembly data
-if not snakemake.params.use_genome:
-    command = "rm -rf " + os.path.dirname(snakemake.output.fasta) + "/{{read_partitions,chrysalis,scaffolding_entries.sam,jellyfish.kmers.fa,*.ok,.*.ok,*cmd*,*.bt2,both*,inchworm*,partitioned_reads*,"+snakemake.params.project_d+",insilico_read_normalization/tmp_normalized_reads}}"+" >> "+snakemake.log.run+" 2>&1"
-else:
-    command = "find " + os.path.dirname(snakemake.output.fasta)+"/*"+\
-              " -not -name "+os.path.basename(snakemake.output.fasta)+\
-              " -not -name "+os.path.basename(snakemake.output.gtm)+\
-              " -delete >> "+snakemake.log.run+" 2>&1"
-f = open(snakemake.log.run, 'at')
-f.write("## COMMAND: "+command+"\n")
-f.close()
-shell(command)
+# # cleaning of assembly data
+# if not snakemake.params.use_genome:
+#     command = "rm -rf " + os.path.dirname(snakemake.output.fasta) + "/{{read_partitions,chrysalis,scaffolding_entries.sam,jellyfish.kmers.fa,*.ok,.*.ok,*cmd*,*.bt2,both*,inchworm*,partitioned_reads*,"+snakemake.params.project_d+",insilico_read_normalization/tmp_normalized_reads}}"+" >> "+snakemake.log.run+" 2>&1"
+# else:
+#     command = "find " + os.path.dirname(snakemake.output.fasta)+"/*"+\
+#               " -not -name "+os.path.basename(snakemake.output.fasta)+\
+#               " -not -name "+os.path.basename(snakemake.output.gtm)+\
+#               " -delete >> "+snakemake.log.run+" 2>&1"
+# f = open(snakemake.log.run, 'at')
+# f.write("## COMMAND: "+command+"\n")
+# f.close()
+# shell(command)

@@ -19,7 +19,7 @@ f.write("## CONDA:\n"+version+"\n")
 f.close()
 
 wd = os.getcwd()+"/"
-evigene_dir = wd+snakemake.params.tmpd+"/evigene/"
+evigene_dir = snakemake.params.tmpd+"/evigene/"
 compact_fasta = wd+snakemake.params.base + ".compact.fa"
 
 command = "tar xf "+snakemake.input.evigene+" -C "+snakemake.params.tmpd+" >> "+ snakemake.log.run + " 2>&1"
@@ -47,7 +47,10 @@ shell(command)
 
 for inp in snakemake.input.assemblies:
   with open(snakemake.log.run, 'at') as f: f.write("# working on "+inp+"\n")
-  short_name = os.path.basename(inp).split('.')[1]
+  if "megahit.intermediate_contigs" in inp:
+    short_name = 'megahit_'+os.path.basename(inp).split('.')[0].replace('k','')
+  else:
+    short_name = os.path.basename(inp).split('.')[1]
   with open(snakemake.log.run, 'at') as f: f.write("# short name: "+short_name+"\n")
   # print("# short name: "+short_name)
   command = "cat " + inp + "|sed 's/^>/>"+short_name+"./'" \

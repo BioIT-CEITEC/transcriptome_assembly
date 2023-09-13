@@ -48,7 +48,7 @@ shell(command)
 #     if len(t1.loc[t1.Percentage > thr]) > 0:
 
 if os.path.isfile(snakemake.params.t1) and os.path.getsize(snakemake.params.t1) > 0:
-    command = "unzip -p "+snakemake.params.arch+" */fastqc_data.txt | awk '/^Total Sequences/ {{print $3}}' "
+    command = "unzip -p "+snakemake.input.arch+" */fastqc_data.txt | awk '/^Total Sequences/ {{print $3}}' "
     f = open(snakemake.log.run, 'at')
     f.write("## Getting number of reads/fragments using command: "+command+"\n")
     f.close()

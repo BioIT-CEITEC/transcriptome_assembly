@@ -10,9 +10,9 @@
       "preprocess/*",
       "logs/*"
     ],
-    "report_index": "results/TA_multiqc_report.html",
+    "report_index": "results/multiqc_report.html",
     "reports": [
-      "results/TA_multiqc_report.html"
+      "results/multiqc_report.html"
     ]
   },
   "general_params": [
@@ -167,6 +167,11 @@
         "type": "int",
         "default": 35
       },
+      "remove_rRNAs": {
+        "label": "Remove rRNA reads from samples (preprocess)",
+        "type": "bool",
+        "default": true
+      },
       "strandness": {
         "label": "Strandness (alignment)",
         "type": "string",
@@ -318,6 +323,95 @@
         "label": "k-mer values to use (Trinity)",
         "type": "string",
         "default": "21;25;31"
+      },
+      "trinity_min_contig_len": {
+        "label": "Min contig length (Trinity)",
+        "type": "int",
+        "default": 200
+      },
+      "trinity_min_kmer_cov": {
+        "label": "Min coverage by reads (Trinity)",
+        "type": "int",
+        "default": 2
+      },
+      "trinity_jaccard_clip": {
+        "label": "Use jaccard-clip function? (Trinity)",
+        "type": "bool",
+        "default": false,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true
+            }
+          }
+        }
+      },
+      "trinity_min_map_cov": {
+        "label": "Min coverage of mapped reads to use (Trinity)",
+        "type": "int",
+        "default": 1,
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": true
+            }
+          }
+        }
+      },
+      "spades_kmers": {
+        "label": "k-mer values to use (Spades)",
+        "type": "string",
+        "default": '29;39;49;57;69;77;89;99;107;119;127',
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": false
+            }
+          }
+        }
+      },
+      "megahit_kmers": {
+        "label": "k-mer values to use (Megahit)",
+        "type": "string",
+        "default": '21;29;39;59;79;99;119;141',
+        "conditions": {
+          "relevance": {
+            "operand": "equal",
+            "negation": false,
+            "values": {
+              "genome_guided": false
+            }
+          }
+        }
+      },
+      "busco_lineage_version": {
+        "label": "Lineage version to use (BUSCO)",
+        "type": "enum",
+        "default": "v10",
+        "list": {
+          "v10": "odb10"
+        }
+      },
+      "busco_lineage": {
+        "label": "Specific lineages to use (BUSCO)",
+        "type": "string",
+        "default": 'metazoa;eukaryota'
+      },
+      "optional_prot_db_to_use": {
+        "label": "Optional protein DBs to annotate against (BLAST)",
+        "type": "string",
+        "default": "refseq;merops"
+      },
+      "nt_taxids": {
+        "label": "Optional NT DB taxids to annotate against (BLAST)",
+        "type": "string",
+        "default": "cypriniformes:7952;actinopterygii:7898"
       }
     },
     "samples": {

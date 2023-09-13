@@ -1,33 +1,41 @@
 ruleorder: prepare_gene2trans > trinity_assembly
 
-def dummy_input(wc):
+def multiqc_report_inputs(wc):
     inputs = {}
     inputs['rnaquast'] = "results/assembly/qc/rnaQUAST/short_report.txt"
     # inputs['transrate']= "results/assembly/qc/transrate/assemblies.csv"
     inputs['stats'] = expand("results/assembly/trinity/{file_name}/merged_samples.{file_name}.general_stats.txt",
                               file_name = ['trinity_'+i for i in trinity_kmers])
+    inputs['stats']+= expand("results/assembly/{file_name}/merged_samples.{file_name}.general_stats.txt",
+                              file_name = ['merged'])
+    inputs['busco'] = expand("results/assembly/qc/busco/{file_name}.{lineage}/{file_name}.short_summary.{lineage}.txt",
+                            lineage = busco_filters.keys(),
+                            file_name = ['merged']+['trinity_'+i for i in trinity_kmers])
+    inputs['bowtie'] = expand("results/assembly/qc/bowtie/{file_name}/{file_name}.bw2.flagstat",
+                               file_name = ['merged']+['trinity_'+i for i in trinity_kmers])
     if config['genome_guided'] == False:
-        inputs['busco'] = expand("results/assembly/qc/busco/{file_name}.{lineage}/{file_name}.short_summary.{lineage}.txt",
+        inputs['busco']+= expand("results/assembly/qc/busco/{file_name}.{lineage}/{file_name}.short_summary.{lineage}.txt",
                                 lineage = busco_filters.keys(),
-                                file_name = ['megahit']+['merged']+['spades_'+i for i in spades_kmers]+['trinity_'+i for i in trinity_kmers])
-        inputs['bowtie'] = expand("results/assembly/qc/bowtie/{file_name}/{file_name}.bw2.flagstat",
-                                  file_name = ['megahit']+['merged']+['spades_'+i for i in spades_kmers]+['trinity_'+i for i in trinity_kmers])
+                                file_name = ['megahit']+['spades_'+i for i in spades_kmers]+['trinity_'+i for i in trinity_kmers])
+        inputs['bowtie']+= expand("results/assembly/qc/bowtie/{file_name}/{file_name}.bw2.flagstat",
+                                  file_name = ['megahit']+['spades_'+i for i in spades_kmers]+['trinity_'+i for i in trinity_kmers])
         inputs['stats']+= expand("results/assembly/{file_name}/merged_samples.{file_name}.general_stats.txt",
-                                  file_name = ['megahit']+['merged'])
+                                  file_name = ['megahit'])
         inputs['stats']+= expand("results/assembly/spades/{file_name}/merged_samples.{file_name}.general_stats.txt",
                                   file_name = ['spades_'+i for i in spades_kmers])
-    else:
-        inputs['busco'] = expand("results/assembly/qc/busco/{file_name}.{lineage}/{file_name}.short_summary.{lineage}.txt",
-                                lineage = busco_filters.keys(),
-                                file_name = ['merged']+['trinity_'+i for i in trinity_kmers])
-        inputs['bowtie'] = expand("results/assembly/qc/bowtie/{file_name}/{file_name}.bw2.flagstat",
-                                   file_name = ['merged']+['trinity_'+i for i in trinity_kmers])
     return inputs
 
-rule dummy:
-    input:  unpack(dummy_input)
-    output: "assembly_OK"
-    shell:  ""
+rule multiqc_report:
+    input:  unpack(multiqc_report_inputs)
+    output: html = "results/multiqc_report.html",
+    log:    run = "logs/merged_samples/multiqc_report.log"
+    threads:1
+    params: multiqc_configs = [workflow.basedir+"/wrappers/multiqc_report/multiqc_config.yaml",\
+                               workflow.basedir+"/wrappers/qc_assembly_rnaquast/multiqc_config.yaml",\
+                               workflow.basedir+"/wrappers/qc_assembly_transrate/multiqc_config.yaml"],
+            path = ".",
+    conda:  "../wrappers/multiqc_report/env.yaml"
+    script: "../wrappers/multiqc_report/script.py"
 
 
 rule qc_assembly_stats:
@@ -92,8 +100,8 @@ rule qc_assembly_busco:
     threads: 10
     resources:  mem = 10
     params: prefix = "results/assembly/qc/busco/{file_name}.{lineage}/",
-            busco_db = GLOBAL_REF_PATH + "/general/busco/odb10/",
-            tmpd = GLOBAL_TMPD_PATH,
+            #busco_db = os.path.join(GLOBAL_REF_PATH,"general/busco/odb10/"),
+            tmpd = GLOBAL_TMPD_PATH+"/",
     conda:  "../wrappers/qc_assembly_busco/env.yaml"
     script: "../wrappers/qc_assembly_busco/script.py"
 
@@ -101,7 +109,7 @@ rule qc_assembly_busco:
 def qc_assembly_bowtie_input(wc):
     inputs = dict()
     inputs['fa'] = qc_assembly_input(wc)
-    preprocessed = "preprocess/trimmed_fastq"
+    preprocessed = "preprocess/corrected_fastq"
     if read_pair_tags == ["SE"]:
         inputs['r1'] = f"{preprocessed}/merged_samples.fastq.gz"
     else:
@@ -129,7 +137,7 @@ rule qc_assembly_bowtie:
 
 def qc_assembly_rnaquast_input(wc):
     inputs = {}
-    inputs['genemark'] = GLOBAL_REF_PATH+"general/GeneMarkS-T.tar"
+    inputs['genemark'] = os.path.join(GLOBAL_REF_PATH,"general/GeneMarkS-T.tar")
     inputs['assemblies'] = expand("results/assembly/merged/merged_samples.merged.fa")
     inputs['assemblies']+= expand("results/assembly/trinity/trinity_{kmer}/merged_samples.trinity_{kmer}.fa", kmer = trinity_kmers)
     if config['genome_guided'] == True:
@@ -147,7 +155,7 @@ rule qc_assembly_rnaquast:
             len_plot= "results/assembly/qc/rnaQUAST/comparison_output/transcript_length_all.png",
     log:    run = "logs/merged_samples/qc_assembly_rnaquast.log",
     threads:1
-    params: tmpd     = GLOBAL_TMPD_PATH,
+    params: tmpd     = GLOBAL_TMPD_PATH+"/",
             odir     = "results/assembly/qc/rnaQUAST/",
             stranded = config["trinity_strandness"],
     conda:  "../wrappers/qc_assembly_rnaquast/env.yaml"
@@ -156,7 +164,7 @@ rule qc_assembly_rnaquast:
 
 def merge_assemblies_input(wc):
     inputs = {}
-    inputs['evigene'] = GLOBAL_REF_PATH+"general/evigene.tar"
+    inputs['evigene'] = os.path.join(GLOBAL_REF_PATH,"general/evigene.tar")
     inputs['assemblies'] = expand("results/assembly/trinity/trinity_{kmer}/merged_samples.trinity_{kmer}.fa", kmer = trinity_kmers)
     if config['genome_guided'] == True:
         pass
@@ -174,7 +182,7 @@ rule merge_assemblies:
     params: base = "results/assembly/merged/merged_samples",
             base_dir = "results/assembly/merged/",
             trclass = "results/assembly/merged/okayset/merged_samples.compact.okay.compact.fa",
-            tmpd = GLOBAL_TMPD_PATH,
+            tmpd = GLOBAL_TMPD_PATH+"/",
     conda:  "../wrappers/merge_assemblies/env.yaml"
     script: "../wrappers/merge_assemblies/script.py"
 
@@ -189,7 +197,8 @@ rule megahit_assembly:
     params: kmers = megahit_kmers,
             fasta = "results/assembly/megahit/merged_samples.contigs.fa",
             mem = "0.2",
-            tmpd = GLOBAL_TMPD_PATH,
+            paired = paired,
+            tmpd = GLOBAL_TMPD_PATH+"/",
             odir = "results/assembly/megahit/",
             prefix = "merged_samples",
     conda:  "../wrappers/megahit_assembly/env.yaml"
@@ -204,7 +213,8 @@ rule spades_assembly:
     resources:  mem = 100
     params: stranded = config["trinity_strandness"],
             odir = "results/assembly/spades/spades_{kmer}",
-            tmpd = GLOBAL_TMPD_PATH,
+            paired = paired,
+            tmpd = GLOBAL_TMPD_PATH+"/",
     conda:  "../wrappers/spades_assembly/env.yaml"
     script: "../wrappers/spades_assembly/script.py"
 
@@ -231,6 +241,7 @@ rule trinity_assembly:
             min_map_cov = config['trinity_min_map_cov'],
             jaccard_clip = config['trinity_jaccard_clip'],
             use_genome = config['genome_guided'],
-            tmpd = GLOBAL_TMPD_PATH,
+            paired = paired,
+            tmpd = GLOBAL_TMPD_PATH+"/",
     conda:  "../wrappers/trinity_assembly/env.yaml"
     script: "../wrappers/trinity_assembly/script.py"

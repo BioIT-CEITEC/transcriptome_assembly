@@ -18,7 +18,7 @@ f = open(snakemake.log.run, 'at')
 f.write("## CONDA:\n"+version+"\n")
 f.close()
 
-genemark_dir = os.getcwd()+"/"+snakemake.params.tmpd+"GeneMarkS-T/"
+genemark_dir = os.path.join(snakemake.params.tmpd,"GeneMarkS-T")
 
 command = "tar xf "+snakemake.input.genemark+" -C "+snakemake.params.tmpd+" >> "+ snakemake.log.run + " 2>&1"
 f = open(snakemake.log.run, 'at')

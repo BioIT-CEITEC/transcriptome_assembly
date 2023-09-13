@@ -25,7 +25,7 @@ f.close()
 shell(command)
 
 command = "cd " + snakemake.params.prefix + ";" + \
-          "$(which time) Build_Trinotate_Boilerplate_SQLite_db.pl Trinotate >> " + os.path.abspath(snakemake.log.run) + " 2>&1"
+          " $(which time) Build_Trinotate_Boilerplate_SQLite_db.pl Trinotate >> " + os.path.abspath(snakemake.log.run) + " 2>&1"
 f = open(snakemake.log.run, 'at')
 f.write("## COMMAND: "+command+"\n")
 f.close()
@@ -39,7 +39,7 @@ f.write("## COMMAND: "+command+"\n")
 f.close()
 shell(command)
 
-command = "$(which time) hmmpress " + snakemake.output.pfam_db + " >> " + snakemake.log.run + " 2>&1"
+command = "$(which time) hmmpress -f " + snakemake.output.pfam_db + " >> " + snakemake.log.run + " 2>&1"
 f = open(snakemake.log.run, 'at')
 f.write("## COMMAND: "+command+"\n")
 f.close()

@@ -19,7 +19,7 @@ rule mark_duplicates:
             umi_usage = config["umi_usage"],
             keep_not_markDups_bam = config["keep_not_markDups_bam"],
             umi_stats_prefix = "preprocess/mapped/merged_samples.umi",
-            tmpd = GLOBAL_TMPD_PATH,
+            tmpd = GLOBAL_TMPD_PATH+"/",
     conda:  "../wrappers/mark_duplicates/env.yaml"
     script: "../wrappers/mark_duplicates/script.py"
 
@@ -56,7 +56,7 @@ rule align_to_genome:
             map_perc= config["map_perc"],
             map_score=config["map_score"],
             paired = paired,
-            tmpd = GLOBAL_TMPD_PATH,
+            tmpd = GLOBAL_TMPD_PATH+"/",
     conda:  "../wrappers/align_to_genome/env.yaml"
     script: "../wrappers/align_to_genome/script.py"
 
@@ -117,15 +117,15 @@ rule remove_overrepresented:
 
 
 checkpoint process_fastqc_data:
-    input:  db = GLOBAL_REF_PATH+"general/rRNA_DBs/rRNA_DB.blast_idx.done",
+    input:  db = os.path.join(GLOBAL_REF_PATH,"general/rRNA_DBs/rRNA_DB.blast_idx.done"),
             reads = expand("preprocess/removed_rRNAs_fastq/{{sample}}{read_tags}.fastq.gz",read_tags=pair_tag),
             fastqc = expand("preprocess/removed_rRNAs_fastq/{{sample}}{read_tags}.fastqc.html",read_tags=pair_tag),
+            arch = expand("preprocess/removed_rRNAs_fastq/{{sample}}{read_tags}_fastqc.zip",read_tags=pair_tag)[0],
     output: tsv = "preprocess/removed_rRNAs_fastq/{sample}.overrep.toremove.tsv",
     log:    run = "logs/{sample}/process_fastqc_data.log",
     threads:20
-    params: db = GLOBAL_REF_PATH+"general/rRNA_DBs/rRNA_DB.blast_idx",
+    params: db = os.path.join(GLOBAL_REF_PATH,"general/rRNA_DBs/rRNA_DB.blast_idx"),
             paired = config["is_paired"],
-            arch = expand("preprocess/removed_rRNAs_fastq/{{sample}}{read_tags}.fastqc.zip",read_tags=pair_tag)[0],
             f1 = "preprocess/removed_rRNAs_fastq/{sample}.overrep.fa",
             b1 = "preprocess/removed_rRNAs_fastq/{sample}.overrep.blast.tsv",
             t1 = "preprocess/removed_rRNAs_fastq/{sample}.overrep.jellyfish.tsv",
@@ -134,7 +134,6 @@ checkpoint process_fastqc_data:
             low_lim = config["overrep_low_lim"], # 0.01,
             qcov = config["overrep_qcov"], # 0.66
             mism = config["overrep_mism"], # 2
-            # othr = config["overrep_thr"], # 0.1
     conda:  "../wrappers/process_fastqc_data/env.yaml"
     script: "../wrappers/process_fastqc_data/script.py"
 
@@ -142,19 +141,15 @@ checkpoint process_fastqc_data:
 rule remove_rRNAs:
     input:  reads = expand("preprocess/trimmed_fastq/{{sample}}{read_tags}.fastq.gz",read_tags=pair_tag),
             fastqc = expand("preprocess/trimmed_fastq/{{sample}}{read_tags}.fastqc.html",read_tags=pair_tag),
-            db = GLOBAL_REF_PATH+"general/rRNA_DBs/rRNA_DB.bw2_idx.done",
+            db = os.path.join(GLOBAL_REF_PATH,"general/rRNA_DBs/rRNA_DB.bw2_idx.done"),
     output: reads = expand("preprocess/removed_rRNAs_fastq/{{sample}}{read_tags}.fastq.gz",read_tags=pair_tag),
-            # aln= "preprocess/removed_rRNAs_fastq/{sample}.removed_rRNAs_fastq.bam",
     log:    run = "logs/{sample}/remove_rRNAs.log",
             meta = "preprocess/removed_rRNAs_fastq/{sample}.bowtie2_metrics.txt",
     threads:    20
     resources:  mem = 30
-    params: bw2_idx = GLOBAL_REF_PATH+"general/rRNA_DBs/rRNA_DB.bw2_idx",
+    params: bw2_idx = os.path.join(GLOBAL_REF_PATH,"general/rRNA_DBs/rRNA_DB.bw2_idx"),
             paired = config["is_paired"],
-            # aln= "preprocess/removed_rRNAs_fastq/{sample}.removed_rRNAs_fastq.sam",
-            # pa = "preprocess/removed_rRNAs_fastq/{sample}.paired_aligned.fq.gz",
             pu = "preprocess/removed_rRNAs_fastq/{sample}_R%.fastq.gz",
-            # ua = "preprocess/removed_rRNAs_fastq/{sample}.unpaired_aligned.fq.gz",
             uu = "preprocess/removed_rRNAs_fastq/{sample}.fastq.gz",
             stranded = config["trinity_strandness"], # RF,
             phred = "--phred33",
@@ -168,7 +163,7 @@ rule run_fastqc:
             arch = "{path}/{filename}_fastqc.zip",
     log:    run  = "{path}/{filename}.run_fastqc.log"
     params: extra = "--noextract --format fastq --nogroup",
-            tmp = GLOBAL_TMPD_PATH,
+            tmp = GLOBAL_TMPD_PATH+"/",
             html = "{path}/{filename}_fastqc.html"
     conda:  "../wrappers/run_fastqc/env.yaml"
     script: "../wrappers/run_fastqc/script.py"
@@ -184,16 +179,16 @@ rule trim_reads:
     params: adaptors = config["trim_adapters"],
             r1u = "preprocess/trimmed_fastq/{sample}_R1.singletons.fastq.gz",
             r2u = "preprocess/trimmed_fastq/{sample}_R2.singletons.fastq.gz",
-            trim_left1 = config["trim_left1"], # Applied only if trim left is true, trimming from R1 (different for classic:0, quant:10, sense:9)
-            trim_right1 = config["trim_right1"], # Applied only if trim right is true, trimming from R1; you should allow this if you want to trim the last extra base and TRIM_LE is true as RD_LENGTH is not effective
-            trim_left2 = config["trim_left2"], # Applied only if trim left is true, trimming from R2 (different for classic:0, quant:?, sense:7)
-            trim_right2 = config["trim_right2"], # Applied only if trim right is true, trimming from R2; you should allow this if you want to trim the last extra base and TRIM_LE is true as RD_LENGTH is not effective
+            trim_left1  = lambda wcs: sample_tab.loc[sample_tab.sample_name == wcs.sample, "ind_trim_left1"].min(), # Applied only if trim left is true, trimming from R1 (different for classic:0, quant:10, sense:9)
+            trim_right1 = lambda wcs: sample_tab.loc[sample_tab.sample_name == wcs.sample, "ind_trim_right1"].min(), # Applied only if trim right is true, trimming from R1; you should allow this if you want to trim the last extra base and TRIM_LE is true as RD_LENGTH is not effective
+            trim_left2  = lambda wcs: sample_tab.loc[sample_tab.sample_name == wcs.sample, "ind_trim_left2"].min(), # Applied only if trim left is true, trimming from R2 (different for classic:0, quant:?, sense:7)
+            trim_right2 = lambda wcs: sample_tab.loc[sample_tab.sample_name == wcs.sample, "ind_trim_right2"].min(), # Applied only if trim right is true, trimming from R2; you should allow this if you want to trim the last extra base and TRIM_LE is true as RD_LENGTH is not effective
             phred = "-phred33",
-            leading = 0,
-            trailing = 0,
+            leading = config['min_qual'],
+            trailing = config['min_qual'],
             crop = 250,
             minlen = config["min_length"],
-            slid_w_1 = 4,
-            slid_w_2 = 5,
+            slid_w_1 = 5,
+            slid_w_2 = config['min_qual'],
     conda:  "../wrappers/trim_reads/env.yaml"
     script: "../wrappers/trim_reads/script.py"

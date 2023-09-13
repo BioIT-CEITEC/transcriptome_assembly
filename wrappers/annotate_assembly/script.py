@@ -5,6 +5,7 @@ import os
 import sys
 import math
 import subprocess
+import uuid
 from snakemake.shell import shell
 
 shell.executable("/bin/bash")
@@ -24,7 +25,14 @@ trin_report = snakemake.output.trin_rep
 trin_report_full = snakemake.params.trin_rep_full
 # trin_report_eval = snakemake.output.trin_rep_eval
 # trin_GO_annot = snakemake.output.go_rep
-sqlite = snakemake.params.sqlite
+#sqlite = snakemake.params.sqlite
+sqlite = os.path.join(snakemake.params.tmp, "trinotate_sqlite_"+uuid.uuid4().hex, os.path.basename(snakemake.params.sqlite))
+
+command = "mkdir -p "+os.path.dirname(sqlite)+" >> "+snakemake.log.run+" 2>&1"
+f = open(snakemake.log.run, 'at')
+f.write("## COMMAND: "+command+"\n")
+f.close()
+shell(command)
 
 command = "cp "+snakemake.input.sqlite+" "+sqlite+" >> "+snakemake.log.run+" 2>&1"
 f = open(snakemake.log.run, 'at')
@@ -122,6 +130,12 @@ shell(command)
 # f.write("## COMMAND: "+command+"\n")
 # f.close()
 # shell(command)
+
+command = "cp "+sqlite+" "+snakemake.params.sqlite+" >> "+snakemake.log.run+" 2>&1"
+f = open(snakemake.log.run, 'at')
+f.write("## COMMAND: "+command+"\n")
+f.close()
+shell(command)
 
 command = "$(which time) Rscript "+snakemake.params.rscript+\
           " "+trin_report_full+\

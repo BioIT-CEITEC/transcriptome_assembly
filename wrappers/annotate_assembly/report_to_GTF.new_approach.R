@@ -113,37 +113,6 @@ best_evidence = function(dt) {
   }
 }
 
-annotate_transcript = function(dt) {
-  dt[order(start),{
-    # Line with transcript information
-    evid = sum_evidence(.SD)
-    if(evid == 0) {
-      trans_name = "unknown_transcript"
-      trans_source = "TransDecoder"
-      trans_evid = "ORF_prediction"
-      trans_info = "0_evidence_sources"
-    } else {
-      hit = best_evidence(.SD)
-      trans_name = hit[1]
-      trans_source = hit[2]
-      trans_evid = hit[3]
-      trans_info = ifelse(evid==1, paste0(evid,"_evidence_source"), paste0("best_evidence_of_",evid,"_sources"))
-    }
-    list(
-      transcript_id=.BY,
-      transcript_start=start,
-      transcript_end=end,
-      transcript_score=trans[V1==.BY, score],
-      transcript_strand=strand,
-      transcript_phase="0",
-      transcript_name=trans_name,
-      transcript_source=trans_source,
-      transcript_evidence=trans_evid,
-      transcript_orf=trans[V1==.BY, ORF_type],
-      transcript_info=trans_info)
-  }, by=prot_id]
-}
-
 path_to_uniprot_mapping = "/mnt/ssd/ssd_1/workspace/martin/uniprot_id_mapping/"
 # setwd("/mnt/ssd/ssd_1/sequia/6744__transcriptome_assembly__genome_guided_TA__221025/")
 args = commandArgs(trailingOnly=TRUE)
@@ -159,7 +128,7 @@ custom_prot_db = strsplit(args[4],',')[[1]]
 custom_nt_taxid= strsplit(args[5],',')[[1]]
 
 print("loading merops info file")
-merops = fread("/mnt/ssd/ssd_3/references/general/MEROPS_DB/merops_pepunit.info.tsv", sep = '\t', header = F, col.names = c("id","desc", "org", "acc", "sub", "type", "pos", "name"))
+merops = fread("/mnt/shared/CFBioinformatics/references_backup/general/MEROPS_DB/merops_pepunit.info.tsv", sep = '\t', header = F, col.names = c("id","desc", "org", "acc", "sub", "type", "pos", "name"))
 # print("loading uniprot gene_name reference")
 # uniprot_gene_name = fread(cmd=paste0("zcat ",path_to_uniprot_mapping,"Gene_Name.gz"), header = F, sep = '\t', col.names = c("uniprot_acc","uniprot_name"), key = 'uniprot_acc')
 # embl_to_uniprot = suppressWarnings(fread(cmd=paste0("zcat ",path_to_uniprot_mapping,"EMBL.gz"), header = F, sep = '\t', col.names = c("uniprot_acc","query"), key = 'query'))
@@ -192,94 +161,91 @@ tab[prot_coords != ".", strand := gsub('.*\\[([+-])\\]', '\\1', prot_coords, per
 
 custom_prot_colnames = c()
 for(i in custom_prot_db) {
-  custom_prot_colnames = c(custom_prot_colnames, tab[,colnames(.SD),.SDcols=patterns(i)])
+  #custom_prot_colnames = c(custom_prot_colnames, tab[,colnames(.SD),.SDcols=patterns(i)])
+  new_names = grep(i, colnames(tab), value=T)
+  if(length(new_names)==0) {
+    print(paste("ID:",i,"wasn't found in colnames of input:",input_name))
+  } else {
+    custom_prot_colnames = c(custom_prot_colnames, new_names)
+  }
 }
 custom_nt_colnames = c()
 for(i in custom_nt_taxid) {
-  custom_nt_colnames = c(custom_nt_colnames, tab[,colnames(.SD),.SDcols=patterns(i)])
+  #custom_nt_colnames = c(custom_nt_colnames, tab[,colnames(.SD),.SDcols=patterns(i)])
+  new_names = grep(i, colnames(tab), value=T)
+  if(length(new_names)==0) {
+    print(paste("ID:",i,"wasn't found in colnames of input:",input_name))
+  } else {
+    custom_nt_colnames = c(custom_nt_colnames, new_names)
+  }
 }
 
 setnames(tab, '#gene_id', "gene_id")
 print("extracting annotation info")
 start_time <- Sys.time()
 annot_tab = tab[prot_coords != ".", {
-  # Create gene information
   evid = sum_evidence(.SD)
   if(evid == 0) {
-    gene_name = paste0("unknown_gene")
+    gene_name = "unknown_gene"
     gene_source = "TransDecoder"
-    gene_biotype = "protein_coding"
-    gene_info = "ORF_prediction"
+    gene_evid = "ORF_prediction"
+    gene_info = "0_evidence_sources"
   } else {
     hit = best_evidence(.SD)
-    gene_name = "gene_with_evidence" #hit[1]
-    gene_source = "see_transcript" #hit[2]
-    gene_biotype = "protein_coding"
-    gene_info = fifelse(evid==1,paste0(evid,"_evidence_source"),paste0("best_evidence_of_",evid,"_sources"))
+    gene_name = hit[1]
+    gene_source = hit[2]
+    gene_evid = hit[3]
+    gene_info = ifelse(evid==1, paste0(evid,"_evidence_source"), paste0("best_evidence_of_",evid,"_sources"))
   }
-  
-  cbind(data.table(gene_start=1, 
-              gene_end=unique(trans_len),
-              gene_strand = .SD[1]$strand,
-              gene_name=gene_name,
-              gene_source=gene_source,
-              gene_biotype=gene_biotype,
-              gene_info=gene_info),
-        annotate_transcript(.SD))
-}, by=gene_id]
+  .SD[order(start),
+    list(
+      chr_id=gene_id,
+      transcript_id=.BY,
+      gene_id=.BY,
+      gene_start=start,
+      gene_end=end,
+      gene_score=trans[V1==.BY, score],
+      gene_strand=strand,
+      gene_phase="0",
+      gene_name=gene_name,
+      gene_biotype="protein_coding",
+      gene_source=gene_source,
+      gene_evidence=gene_evid,
+      gene_orf=trans[V1==.BY, ORF_type],
+      gene_info=gene_info)
+  ]
+}, by=prot_id]
 print(Sys.time() - start_time)
 
 print("formatting final annotation")
 start_time <- Sys.time()
-gtf = annot_tab[,{
+gtf = annot_tab[order(chr_id, gene_start),{
   # Line with gene information
-  gid = gene_id
-  gene_attrs = paste0('gene_id "',gid,'";',
+  gene_attrs = paste0('gene_id "',gene_id,'";',
                       ' gene_name "',gene_name[1],'";',
-                      ' gene_source "',gene_source[1],'";',
                       ' gene_biotype "',gene_biotype[1],'";',
+                      ' gene_source "',gene_source[1],'";',
+                      ' gene_evidence "',gene_evidence[1],'";',
                       ' gene_info "',gene_info[1],'";')
+  # Line with transcript information
+  trans_attrs = paste0(gene_attrs,
+                       ' transcript_id "',transcript_id,'";',
+                       ' transcript_orf "',gene_orf[1],'";')
+  # Line with exon information
+  exon_attrs = paste0(trans_attrs,
+                      ' exon_id "exon.',transcript_id,'";',
+                      ' exon_number "1";')
   gene_line = list(
-    V1=gid,
-    V2="Trinotate",
-    V3="gene",
-    V4=gene_start[1],
-    V5=gene_end[1],
-    V6=".",
-    V7=gene_strand[1],
-    V8=".",
-    V9=gene_attrs)
-  
-  rbind(gene_line,
-        .SD[order(transcript_start)][,{
-          # Line with transcript information
-          tid=prot_id
-          trans_attrs = paste0(gene_attrs,
-                               ' transcript_id "',tid,'";',
-                               ' transcript_name "',transcript_name[1],'";',
-                               ' transcript_source "',transcript_source[1],'";',
-                               ' transcript_evidence "',transcript_evidence[1],'";',
-                               ' transcript_orf "',transcript_orf[1],'";',
-                               ' transcript_info "',transcript_info[1],'";')
-          # Line with exon information
-          exon_attrs = paste0(trans_attrs,
-                              ' exon_id "exon.',tid,'";',
-                              ' exon_number "1";',
-                              ' exon_info "redundant information necessary for proper annotation formatting";')
-          list(
-            V1=rep(gid,2),
-            V2=rep("Trinotate",2),
-            V3=c("transcript","exon"),
-            V4=rep(transcript_start,2),
-            V5=rep(transcript_end,2),
-            V6=rep(transcript_score,2),
-            V7=rep(transcript_strand,2),
-            V8=rep(transcript_phase,2),
-            V9=c(trans_attrs,exon_attrs)
-          )
-        },by=prot_id],
-        fill=T)
-}, by=gene_id][,.SD,.SDcols=!c("gene_id","prot_id")]
+    V1=rep(chr_id, 3),
+    V2=rep("Trinotate", 3),
+    V3=c("gene", "transcript", "exon"),
+    V4=rep(gene_start, 3),
+    V5=rep(gene_end, 3),
+    V6=rep(gene_score, 3),
+    V7=rep(gene_strand, 3),
+    V8=rep(gene_phase, 3),
+    V9=c(gene_attrs, trans_attrs, exon_attrs))
+}, by=.(chr_id,prot_id)][,.SD,.SDcols=!c("prot_id","chr_id")]
 print(Sys.time() - start_time)
 
 print("writing final annotation")
