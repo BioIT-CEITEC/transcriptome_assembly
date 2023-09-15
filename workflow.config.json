@@ -365,7 +365,7 @@
       "spades_kmers": {
         "label": "k-mer values to use (Spades)",
         "type": "string",
-        "default": '29;39;49;57;69;77;89;99;107;119;127',
+        "default": "29;39;49;57;69;77;89;99;107;119;127",
         "conditions": {
           "relevance": {
             "operand": "equal",
@@ -379,7 +379,7 @@
       "megahit_kmers": {
         "label": "k-mer values to use (Megahit)",
         "type": "string",
-        "default": '21;29;39;59;79;99;119;141',
+        "default": "21;29;39;59;79;99;119;141",
         "conditions": {
           "relevance": {
             "operand": "equal",
@@ -401,7 +401,7 @@
       "busco_lineage": {
         "label": "Specific lineages to use (BUSCO)",
         "type": "string",
-        "default": 'metazoa;eukaryota'
+        "default": "metazoa;eukaryota"
       },
       "optional_prot_db_to_use": {
         "label": "Optional protein DBs to annotate against (BLAST)",
