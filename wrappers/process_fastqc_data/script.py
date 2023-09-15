@@ -48,16 +48,16 @@ shell(command)
 #     if len(t1.loc[t1.Percentage > thr]) > 0:
 
 if os.path.isfile(snakemake.params.t1) and os.path.getsize(snakemake.params.t1) > 0:
-    command = "unzip -p "+snakemake.input.arch+" */fastqc_data.txt | awk '/^Total Sequences/ {{print $3}}' "
+    command = "unzip -p "+snakemake.input.arch+" */fastqc_data.txt 2>> "+snakemake.log.run+" | awk '/^Total Sequences/ {{print $3}}' 2>> "+snakemake.log.run
     f = open(snakemake.log.run, 'at')
     f.write("## Getting number of reads/fragments using command: "+command+"\n")
     f.close()
-    
+
     total_seq = str(subprocess.Popen(command, shell=True, stdout=subprocess.PIPE).communicate()[0], 'utf-8')
     f = open(snakemake.log.run, 'at')
     f.write("## Total reads/fragments: "+total_seq+"\n")
     f.close()
-    
+
     command = "cat "+snakemake.params.t1+\
               "| tail -n +2 | sort -k2,2nr"+\
               "| awk '$2 >= "+str(int(total_seq)*float(snakemake.params.low_lim))+" {{print \">seq_\"NR\"\\t\"$2,$1}}' OFS='\\n'"+\
@@ -67,7 +67,7 @@ if os.path.isfile(snakemake.params.t1) and os.path.getsize(snakemake.params.t1) 
     f.write("## COMMAND: "+command+"\n")
     f.close()
     shell(command)
-    
+
     if os.path.isfile(snakemake.params.f1) and os.path.getsize(snakemake.params.f1) > 0:
         command = "$(which time) blastn"+\
                   " -query "+snakemake.params.f1+\
@@ -81,7 +81,7 @@ if os.path.isfile(snakemake.params.t1) and os.path.getsize(snakemake.params.t1) 
         f.write("## COMMAND: "+command+"\n")
         f.close()
         shell(command)
-                  
+
         command = "$(which time) Rscript "+snakemake.params.rscript+\
                   " "+snakemake.params.b1+\
                   " "+snakemake.params.f1+\
@@ -105,5 +105,4 @@ else:
     f.write("## COMMAND: "+command+"\n")
     f.close()
     shell(command)
-            
 
