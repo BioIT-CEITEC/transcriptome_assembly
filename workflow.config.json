@@ -393,9 +393,9 @@
       "busco_lineage_version": {
         "label": "Lineage version to use (BUSCO)",
         "type": "enum",
-        "default": "v10",
+        "default": "odb10",
         "list": {
-          "v10": "odb10"
+          "odb10": "odb10"
         }
       },
       "busco_lineage": {
