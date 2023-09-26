@@ -1,0 +1,56 @@
+custom_data:
+  transrate_table:
+    section_name: 'Transrate stats'
+    description: 'This table is the main output from  <a href="https://hibberdlab.com/transrate/metrics.html">Transrate tool.</a>'
+    plot_type: table
+    format: tsv
+    pconfig:
+      col1_header: 'Assemblies'
+    # headers:
+    #   n_seqs:
+    #     title:  '# of contigs'
+    #     format: '{:,.0f}'
+    #     # scale:  false
+    #   smallest: 
+    #     title:  'Shortest contig length'
+    #     format: '{:,.0f}'
+    #   largest:
+    #     title:  'Longest contig length'
+    #     format: '{:,.0f}'
+    #   n_bases:
+    #     title:  'Total bases'
+    #     format: '{:,.0f}'
+    #     # scale:  false
+    #   mean_len:
+    #     title:  'Mean contig length'
+    #   n_under_200:
+    #     title:  'Contigs under 200 nt'
+    #     format: '{:,.0f}'
+    #     scale:  'RdBu-rev'
+    #     bgcols:
+    #       0:  "#74a9cf"
+    #   n_over_1k:
+    #     title:  'Contigs over 1K nt'
+    #     format: '{:,.0f}'
+    #   n_over_10k:
+    #     title:  'Contigs over 10K nt'
+    #     format: '{:,.0f}'
+    #   n_with_orf:
+    #     title:  'Contigs with ORF'
+    #     format: '{:,.0f}'
+    #   mean_orf_percent:
+    #     title:  'Mean ORF length'
+    #     suffix: '%'
+      # n90     n70     n50     n30     n10     gc      bases_n proportion_n    fragments       fragments_mapped        p_fragments_mapped      good_mappings   p_good_mapping  bad_mappings    potential_bridges       bases_uncovered p_bases_uncovered       contigs_uncovbase       p_contigs_uncovbase     contigs_uncovered       p_contigs_uncovered     contigs_lowcovered      p_contigs_lowcovered    contigs_segmented       p_contigs_segmented     CRBB_hits       n_contigs_with_CRBB     p_contigs_with_CRBB     rbh_per_reference       n_refs_with_CRBB        p_refs_with_CRBB        cov25   p_cov25 cov50   p_cov50 cov75   p_cov75 cov85   p_cov85 cov95   p_cov95 reference_coverage      score   optimal_score   cutoff  weighted
+    # pconfig:
+    #   - bases_n:
+    #       min: 0
+    #       scale: "GnYlRd"
+    #   - proportion_n:
+    #       min: 0
+    #       scale: "GnYlRd"
+    #       suffix: "%"
+sp:
+ transrate_table:
+  fn: assemblies.csv
+#ignore_images: false

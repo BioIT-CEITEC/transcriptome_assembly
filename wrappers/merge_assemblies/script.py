@@ -18,9 +18,7 @@ f = open(snakemake.log.run, 'at')
 f.write("## CONDA:\n"+version+"\n")
 f.close()
 
-wd = os.getcwd()+"/"
-evigene_dir = snakemake.params.tmpd+"/evigene/"
-compact_fasta = wd+snakemake.params.base + ".compact.fa"
+compact_fasta = os.path.abspath(snakemake.params.base + ".compact.fa")
 
 command = "tar xf "+snakemake.input.evigene+" -C "+snakemake.params.tmpd+" >> "+ snakemake.log.run + " 2>&1"
 f = open(snakemake.log.run, 'at')
@@ -47,7 +45,7 @@ shell(command)
 
 for inp in snakemake.input.assemblies:
   with open(snakemake.log.run, 'at') as f: f.write("# working on "+inp+"\n")
-  if "megahit.intermediate_contigs" in inp:
+  if "megahit/intermediate_contigs" in inp:
     short_name = 'megahit_'+os.path.basename(inp).split('.')[0].replace('k','')
   else:
     short_name = os.path.basename(inp).split('.')[1]
@@ -77,12 +75,12 @@ for inp in snakemake.input.assemblies:
 # shell(command)
 
 command = "cd " + snakemake.params.base_dir + ";" + \
-            "$(which time) " + evigene_dir + "scripts/prot/tr2aacds.pl" + \
+            "$(which time) " + os.path.abspath(snakemake.params.tmpd+"/evigene/scripts/prot/tr2aacds.pl") + \
             " -mrnaseq " + compact_fasta + \
             " -NCPU=" + str(snakemake.threads) + \
             " -MAXMEM="+str(snakemake.resources.mem)+"000" + \
             " -logfile -tidyup" + \
-            " >> " + wd + snakemake.log.run + " 2>&1 "
+            " >> " + os.path.abspath(snakemake.log.run) + " 2>&1 "
 f = open(snakemake.log.run, 'at')
 f.write("## COMMAND: "+command+"\n")
 f.close()

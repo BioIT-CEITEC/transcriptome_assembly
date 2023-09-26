@@ -3,7 +3,7 @@ ruleorder: prepare_gene2trans > trinity_assembly
 def multiqc_report_inputs(wc):
     inputs = {}
     inputs['rnaquast'] = "results/assembly/qc/rnaQUAST/short_report.txt"
-    # inputs['transrate']= "results/assembly/qc/transrate/assemblies.csv"
+    inputs['transrate']= "results/assembly/qc/transrate/assemblies.csv"
     inputs['stats'] = expand("results/assembly/trinity/{file_name}/merged_samples.{file_name}.general_stats.txt",
                               file_name = ['trinity_'+i for i in trinity_kmers])
     inputs['stats']+= expand("results/assembly/{file_name}/merged_samples.{file_name}.general_stats.txt",
@@ -71,23 +71,23 @@ def qc_assembly_input(ws):
         return "ERROR"
 
 
-# rule qc_assembly_transrate:
-#     input:  merged = "results/assembly/merged/merged_samples.merged.fa",
-#             trinity = expand("results/assembly/trinity/trinity_{kmer}/merged_samples.trinity_{kmer}.fa", kmer = trinity_kmers),
-#             spades  = expand("results/assembly/spades/spades_{kmer}/merged_samples.spades_{kmer}.fa", kmer = spades_kmers),
-#             megahit = expand("results/assembly/megahit/merged_samples.megahit.fa"),
-#             r1 = "preprocess/corrected_fastq/merged_samples_R1.correct.fastq.gz",
-#             r2 = "preprocess/corrected_fastq/merged_samples_R2.correct.fastq.gz",
-#     output: summ = "results/assembly/qc/transrate/assemblies.csv",
-#     log:    run = "logs/merged_samples/qc_assembly_transrate.log",
-#     threads: 20
-#     params: prefix = "results/assembly/qc/transrate/",
-#             wdir = "./",
-#             sdir = "/mnt/ssd/ssd_1/snakemake/",
-#             img = "docker://arnaudmeng/transrate:1.0.3",
-#             ref = config.transrate_ref,
-#     # conda:  "../wrappers/qc_assembly_transrate/env.yaml"
-#     script: "../wrappers/qc_assembly_transrate/script.py"
+rule qc_assembly_transrate:
+    input:  merged = "results/assembly/merged/merged_samples.merged.fa",
+            trinity = expand("results/assembly/trinity/trinity_{kmer}/merged_samples.trinity_{kmer}.fa", kmer = trinity_kmers),
+            spades  = expand("results/assembly/spades/spades_{kmer}/merged_samples.spades_{kmer}.fa", kmer = spades_kmers),
+            megahit = expand("results/assembly/megahit/merged_samples.megahit.fa"),
+            r1 = "preprocess/corrected_fastq/merged_samples_R1.fastq.gz",
+            r2 = "preprocess/corrected_fastq/merged_samples_R2.fastq.gz",
+    output: summ = "results/assembly/qc/transrate/assemblies.csv",
+    log:    run = "logs/merged_samples/qc_assembly_transrate.log",
+    threads: 20
+    params: prefix = "results/assembly/qc/transrate/",
+            wdir = os.getcwd(),
+            sdir = os.getcwd(),
+            img = "docker://arnaudmeng/transrate:1.0.3",
+            ref = config["transrate_ref"],
+    # conda:  "../wrappers/qc_assembly_transrate/env.yaml"
+    script: "../wrappers/qc_assembly_transrate/script.py"
 
 
 rule qc_assembly_busco:

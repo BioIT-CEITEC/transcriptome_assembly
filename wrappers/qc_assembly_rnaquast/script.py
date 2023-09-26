@@ -18,7 +18,14 @@ f = open(snakemake.log.run, 'at')
 f.write("## CONDA:\n"+version+"\n")
 f.close()
 
-genemark_dir = os.path.join(snakemake.params.tmpd,"GeneMarkS-T")
+# This fix needs to be here until the release of rnaQUAST v2.2.4 or later will be available using conda
+command = "export FILE=$(find $CONDA_PREFIX -type f -name UtilsPictures.py 2>> "+snakemake.log.run+") && echo \"Checking file $FILE if missing 'import math'\" >> "+snakemake.log.run+" && [[ ! $(grep -F \"import math\" $FILE) ]] && sed -i '2 a import math' $FILE >> "+snakemake.log.run+" 2>&1"
+f = open(snakemake.log.run, 'at')
+f.write("## COMMAND: "+command+"\n")
+f.close()
+shell(command)
+
+genemark_dir = os.path.abspath(os.path.join(snakemake.params.tmpd,"GeneMarkS-T"))
 
 command = "tar xf "+snakemake.input.genemark+" -C "+snakemake.params.tmpd+" >> "+ snakemake.log.run + " 2>&1"
 f = open(snakemake.log.run, 'at')

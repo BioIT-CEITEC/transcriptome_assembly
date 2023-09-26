@@ -27,9 +27,6 @@ if 'reference' in config:
 
 ##### Config processing #####
 
-# if not 'transrate_ref' in config:
-#     config['transrate_ref'] = 'termites_proteins_ncbi.fasta'
-
 if not 'min_qual' in config:
    config['min_qual'] = 25
 if not 'remove_rRNAs' in config:
@@ -70,6 +67,8 @@ if not 'busco_lineage_version' in config:
     config['busco_lineage_version'] = 'odb10' # BUSCO lineage version appended to the lineage names
 if not 'busco_lineage' in config:
     config['busco_lineage'] = "arachnida;arthropoda;metazoa" # BUSCO lineage names to check assembly against similar organisms
+if not 'transrate_ref' in config:
+    config['transrate_ref'] = ''
 if not 'optional_prot_db_to_use' in config:
     config['optional_prot_db_to_use'] = 'merops' #TODO: add as a pipeline parameter for optional protein DBs from a list (refseq, merops, etc), uniprot is not optional, 
 if not 'nt_taxids' in config:
