@@ -32,7 +32,8 @@ rule multiqc_report:
     threads:1
     params: multiqc_configs = [workflow.basedir+"/wrappers/multiqc_report/multiqc_config.yaml",\
                                workflow.basedir+"/wrappers/qc_assembly_rnaquast/multiqc_config.yaml",\
-                               workflow.basedir+"/wrappers/qc_assembly_transrate/multiqc_config.yaml"],
+                               workflow.basedir+"/wrappers/qc_assembly_transrate/multiqc_config.yaml",\
+                               workflow.basedir+"/wrappers/qc_assembly_busco/multiqc_config.yaml"],
             path = ".",
     conda:  "../wrappers/multiqc_report/env.yaml"
     script: "../wrappers/multiqc_report/script.py"
@@ -42,7 +43,7 @@ rule qc_assembly_stats:
     input:  fa = "results/assembly/{file_name}.fa",
             gene2trans = "results/assembly/{file_name}.fa.gene_trans_map",
     output: trin_stats = "results/assembly/{file_name}.general_stats.txt",
-    log:    run = "logs/merged_samples/{file_name}.qc_assembly_stats.log"
+    log:    run = "logs/merged_samples/{file_name}/qc_assembly_stats.log"
     threads: 1
     conda:  "../wrappers/qc_assembly_stats/env.yaml"
     script: "../wrappers/qc_assembly_stats/script.py"
@@ -51,7 +52,7 @@ rule qc_assembly_stats:
 rule prepare_gene2trans:
     input:  fa = "results/assembly/{filename}.fa",
     output: gene2trans = "results/assembly/{filename}.fa.gene_trans_map",
-    log:    run = "logs/merged_samples/{filename}.prepare_annot_gene2trans.log"
+    log:    run = "logs/merged_samples/{filename}/prepare_annot_gene2trans.log"
     threads: 1
     resources:  mem = 10
     conda:  "../wrappers/prepare_gene2trans/env.yaml"
@@ -96,7 +97,7 @@ rule qc_assembly_busco:
     output: summ = "results/assembly/qc/busco/{file_name}.{lineage}/{file_name}.short_summary.{lineage}.txt",
             ftab = "results/assembly/qc/busco/{file_name}.{lineage}/{file_name}.full_table.{lineage}.tsv",
             miss = "results/assembly/qc/busco/{file_name}.{lineage}/{file_name}.missing_busco.{lineage}.tsv",
-    log:    run = "logs/merged_samples/qc_assembly_busco.{lineage}.{file_name}.log",
+    log:    run = "logs/merged_samples/{file_name}/qc_assembly_busco.{lineage}.log",
     threads: 10
     resources:  mem = 10
     params: prefix = "results/assembly/qc/busco/{file_name}.{lineage}/",
@@ -125,7 +126,7 @@ rule qc_assembly_bowtie:
             picard_txt = "results/assembly/qc/bowtie/{file_name}/{file_name}.insert_size.txt",
             picard_pdf = "results/assembly/qc/bowtie/{file_name}/{file_name}.insert_size.pdf",
             ss_analysis = "results/assembly/qc/bowtie/{file_name}/{file_name}.strand_spec.dat.vioplot.pdf",
-    log:    run = "logs/merged_samples/qc_assembly_bowtie.{file_name}.log"
+    log:    run = "logs/merged_samples/{file_name}/qc_assembly_bowtie.log"
     threads:40
     resources:  mem = 50
     params: prefix      = "results/assembly/qc/bowtie/{file_name}/{file_name}",

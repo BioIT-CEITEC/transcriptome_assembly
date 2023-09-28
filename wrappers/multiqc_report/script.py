@@ -33,6 +33,7 @@ for conf in snakemake.params.multiqc_configs:
 command = "$(which time) --verbose multiqc -f -d"+\
           " "+configs+\
           " -n "+snakemake.output.html+\
+          " -x 'tmp' -x 'rules' -x 'wrappers' -x '.snakemake' -x '.taskrunner'"+\
           " "+snakemake.params.path+\
           " >> "+snakemake.log.run+" 2>&1 "
 f = open(snakemake.log.run, 'at')
