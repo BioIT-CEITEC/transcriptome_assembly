@@ -181,5 +181,6 @@ rule prepare_annot_build:
     resources:  mem = 5
     params: prefix = GLOBAL_TMPD_PATH+"/",
             pfam_db = os.path.join(GLOBAL_TMPD_PATH,"Pfam-A.hmm.gz"),
+            res_prefix = os.path.join(GLOBAL_REF_PATH,"general/trinotate_3.2.2_DB_prepared"),
     conda:  "../wrappers/prepare_annot_build/env.yaml"
     script: "../wrappers/prepare_annot_build/script.py"

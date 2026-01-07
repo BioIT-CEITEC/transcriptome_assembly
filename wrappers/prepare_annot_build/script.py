@@ -24,12 +24,28 @@ f.write("## COMMAND: "+command+"\n")
 f.close()
 shell(command)
 
-command = "cd " + snakemake.params.prefix + ";" + \
-          " $(which time) Build_Trinotate_Boilerplate_SQLite_db.pl Trinotate >> " + os.path.abspath(snakemake.log.run) + " 2>&1"
-f = open(snakemake.log.run, 'at')
-f.write("## COMMAND: "+command+"\n")
-f.close()
-shell(command)
+#command = "cd " + snakemake.params.prefix + ";" + \
+#          " $(which time) Build_Trinotate_Boilerplate_SQLite_db.pl Trinotate >> " + os.path.abspath(snakemake.log.run) + " 2>&1"
+#f = open(snakemake.log.run, 'at')
+#f.write("## COMMAND: "+command+"\n")
+#f.close()
+#shell(command)
+
+try:
+        command = "cd " + snakemake.params.prefix + ";" + \
+                  " $(which time) Build_Trinotate_Boilerplate_SQLite_db.pl Trinotate >> " + os.path.abspath(snakemake.log.run) + " 2>&1"
+        f = open(snakemake.log.run, 'at')
+        f.write("## COMMAND: "+command+"\n")
+        f.close()
+        shell(command)
+except:
+        print("WARNING: Build_Trinotate_Boilerplate_SQLite_db.pl script failed = copying data from "+snakemake.params.res_prefix+"!!!")
+        command = "cp " + snakemake.params.res_prefix + "/Trinotate.sqlite " + snakemake.params.res_prefix + "/Pfam-A.hmm.gz " + snakemake.params.prefix + " >> " + snakemake.log.run + " 2>&1"
+        f = open(snakemake.log.run, 'at')
+        f.write("## COMMAND: "+command+"\n")
+        f.close()
+        shell(command)
+
 
 # Use an HMM search to identify PFAM domains in the longest ORFs
 command = "$(which time) unpigz -p " + str(snakemake.threads) + " " + snakemake.params.pfam_db + \
