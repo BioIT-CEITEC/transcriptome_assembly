@@ -13,8 +13,10 @@ GLOBAL_TMPD_PATH = config["globalTmpdPath"]
 # GLOBAL_RES_PATH = "/mnt/ssd/ssd_3/resources/"
 # GLOBAL_REF_PATH = "/mnt/references/"
 # GLOBAL_TMPD_PATH = "./tmp/"
+LOCAL_TMPD_PATH = "./tmp"
 
 os.makedirs(GLOBAL_TMPD_PATH, exist_ok=True)
+os.makedirs(LOCAL_TMPD_PATH, exist_ok=True)
 
 #### Reference processing ####
 # setting organism from reference

@@ -9,7 +9,7 @@ def annotate_assembly_inputs(wc):
     inputs['pfam'] = "results/annotation/TrinotatePFAM.out"
     inputs['pred_gff'] = "results/annotation/transdecoder_dir/merged_samples.merged.fa.transdecoder.gff3"
     inputs['signalp']  = "results/annotation/signalp.gff3"
-    inputs['sqlite'] = os.path.join(GLOBAL_TMPD_PATH,"Trinotate.sqlite")
+    inputs['sqlite'] = os.path.join(LOCAL_TMPD_PATH,"Trinotate.sqlite")
     inputs['custom'] = expand("results/annotation/blast{custom}.tsv", custom=["x_"+i+"_processed" for i in custom_prot_dbs]+["p_"+i+"_processed" for i in custom_prot_dbs]+["n_nt_processed.taxids_"+i.split(':')[0].lower() for i in nt_taxids])
     # TBD: Uniprot-mapping DBS: EMBL, MEROPS, RefSeq, RefSeq_NT
     return inputs
@@ -71,7 +71,7 @@ rule prepare_annot_transd_pred:
 
 rule prepare_annot_pfamdb:
     input:  fa = "results/annotation/transdecoder_dir/longest_orfs.pep",
-            pfam_db = os.path.join(GLOBAL_TMPD_PATH,"Pfam-A.hmm"),
+            pfam_db = os.path.join(LOCAL_TMPD_PATH,"Pfam-A.hmm"),
     output: pfam_out = "results/annotation/TrinotatePFAM.out",
     log:    run = "logs/prepare_annot_pfamdb.log"
     threads: 20
@@ -174,8 +174,8 @@ rule prepare_annot_long_orfs:
 
 
 rule prepare_annot_build:
-    output: pfam_db = os.path.join(GLOBAL_TMPD_PATH,"Pfam-A.hmm"),
-            sqlite = os.path.join(GLOBAL_TMPD_PATH,"Trinotate.sqlite"),
+    output: pfam_db = os.path.join(LOCAL_TMPD_PATH,"Pfam-A.hmm"),
+            sqlite = os.path.join(LOCAL_TMPD_PATH,"Trinotate.sqlite"),
     log:    run = "logs/prepare_annot_build.log"
     threads: 1
     resources:  mem = 5
