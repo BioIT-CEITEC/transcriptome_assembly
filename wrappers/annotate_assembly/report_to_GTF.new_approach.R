@@ -113,7 +113,7 @@ best_evidence = function(dt) {
   }
 }
 
-path_to_uniprot_mapping = "/mnt/ssd/ssd_1/workspace/martin/uniprot_id_mapping/"
+path_to_uniprot_mapping = "/mnt/data/ceitec_cfg2/710000-CEITEC/713000-cmm/713016-bioit/base/workspace_from_production/martin/uniprot_id_mapping/"
 # setwd("/mnt/ssd/ssd_1/sequia/6744__transcriptome_assembly__genome_guided_TA__221025/")
 args = commandArgs(trailingOnly=TRUE)
 # args = c("results/annotation/trinotate_report_wt_seqs.xls",
@@ -128,7 +128,7 @@ custom_prot_db = strsplit(args[4],',')[[1]]
 custom_nt_taxid= strsplit(args[5],',')[[1]]
 
 print("loading merops info file")
-merops = fread("/mnt/nfs/shared/CFBioinformatics/references_backup/general/MEROPS_DB/merops_pepunit.info.tsv", sep = '\t', header = F, col.names = c("id","desc", "org", "acc", "sub", "type", "pos", "name"))
+merops = fread("/mnt/data/ceitec_cfg2/710000-CEITEC/713000-cmm/713016-bioit/base/references_backup/general/MEROPS_DB/merops_pepunit.info.tsv", sep = '\t', header = F, col.names = c("id","desc", "org", "acc", "sub", "type", "pos", "name"))
 # print("loading uniprot gene_name reference")
 # uniprot_gene_name = fread(cmd=paste0("zcat ",path_to_uniprot_mapping,"Gene_Name.gz"), header = F, sep = '\t', col.names = c("uniprot_acc","uniprot_name"), key = 'uniprot_acc')
 # embl_to_uniprot = suppressWarnings(fread(cmd=paste0("zcat ",path_to_uniprot_mapping,"EMBL.gz"), header = F, sep = '\t', col.names = c("uniprot_acc","query"), key = 'query'))
