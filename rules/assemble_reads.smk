@@ -85,9 +85,9 @@ rule qc_assembly_transrate:
     params: prefix = "results/assembly/qc/transrate/",
             wdir = os.getcwd(),
             sdir = os.getcwd(),
-            img = "docker://arnaudmeng/transrate:1.0.3",
+#            img = "docker://arnaudmeng/transrate:1.0.3",
             ref = config["transrate_ref"],
-    # conda:  "../wrappers/qc_assembly_transrate/env.yaml"
+    conda:  "../wrappers/qc_assembly_transrate/env.yaml"
     script: "../wrappers/qc_assembly_transrate/script.py"
 
 

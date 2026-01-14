@@ -18,17 +18,18 @@ f = open(snakemake.log.run, 'at')
 f.write("## CONDA:\n"+version+"\n")
 f.close()
 
+cdir = "/opt/"+os.path.basename(snakemake.params.sdir)
 trinity = snakemake.input.trinity if hasattr(snakemake.input,'trinity') and len(snakemake.input.trinity)>0 else []
 spades  = snakemake.input.spades  if hasattr(snakemake.input,'spades') and len(snakemake.input.spades) >0 else []
 megahit = snakemake.input.megahit if hasattr(snakemake.input,'megahit') and len(snakemake.input.megahit)>0 else []
 
-command = "transrate"+ \
-          " --assembly "+snakemake.input.merged+","+",".join(trinity+spades+megahit)+ \
-          " --output "+snakemake.params.prefix+ \
+command = "singularity exec -B "+snakemake.params.sdir+":"+cdir+" "+snakemake.params.img+" /bin/bash -c \"transrate"+ \
+          " --assembly "+os.path.join(cdir,snakemake.input.merged)+","+",".join([os.path.join(cdir,a) for a in trinity+spades+megahit])+ \
+          " --output "+os.path.join(cdir,snakemake.params.prefix)+ \
           " --threads "+str(snakemake.threads)+ \
-          " --left "+snakemake.input.r1+(" --right "+snakemake.input.r2 if hasattr(snakemake.input,'r2') else "")+ \
-          (" --reference "+snakemake.params.ref if snakemake.params.ref != "" else "")+ \
-          " >> "+snakemake.log.run+" 2>&1"
+          " --left "+os.path.join(cdir,snakemake.input.r1)+(" --right "+os.path.join(cdir,snakemake.input.r2) if hasattr(snakemake.input,'r2') else "")+ \
+          (" --reference "+os.path.join(cdir,snakemake.params.ref) if snakemake.params.ref != "" else "")+\
+          " >> "+os.path.join(cdir,snakemake.log.run)+" 2>&1\""
 with open(snakemake.log.run, 'at') as f:
   f.write("## COMMAND: "+command+"\n")
 shell(command)
