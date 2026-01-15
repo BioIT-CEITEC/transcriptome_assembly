@@ -11,14 +11,14 @@ def multiqc_report_inputs(wc):
     inputs['busco'] = expand("results/assembly/qc/busco/{file_name}.{lineage}/{file_name}.short_summary.{lineage}.txt",
                             lineage = busco_filters.keys(),
                             file_name = ['merged']+['trinity_'+i for i in trinity_kmers])
-    inputs['bowtie'] = expand("results/assembly/qc/bowtie/{file_name}/{file_name}.bw2.flagstat",
-                               file_name = ['merged']+['trinity_'+i for i in trinity_kmers])
+#    inputs['bowtie'] = expand("results/assembly/qc/bowtie/{file_name}/{file_name}.bw2.flagstat",
+#                               file_name = ['merged']+['trinity_'+i for i in trinity_kmers])
     if config['genome_guided'] == False:
         inputs['busco']+= expand("results/assembly/qc/busco/{file_name}.{lineage}/{file_name}.short_summary.{lineage}.txt",
                                 lineage = busco_filters.keys(),
                                 file_name = ['megahit']+['spades_'+i for i in spades_kmers]+['trinity_'+i for i in trinity_kmers])
-        inputs['bowtie']+= expand("results/assembly/qc/bowtie/{file_name}/{file_name}.bw2.flagstat",
-                                  file_name = ['megahit']+['spades_'+i for i in spades_kmers]+['trinity_'+i for i in trinity_kmers])
+#        inputs['bowtie']+= expand("results/assembly/qc/bowtie/{file_name}/{file_name}.bw2.flagstat",
+#                                  file_name = ['megahit']+['spades_'+i for i in spades_kmers]+['trinity_'+i for i in trinity_kmers])
         inputs['stats']+= expand("results/assembly/{file_name}/merged_samples.{file_name}.general_stats.txt",
                                   file_name = ['megahit'])
         inputs['stats']+= expand("results/assembly/spades/{file_name}/merged_samples.{file_name}.general_stats.txt",
