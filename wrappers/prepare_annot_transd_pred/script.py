@@ -28,7 +28,6 @@ command = "cd " + transdecoder_dir + "; " + \
           " --retain_blastp_hits " + os.path.abspath(snakemake.input.blastp_out) + \
           " --output_dir " + os.path.abspath(transdecoder_dir) + \
           " >> " + os.path.abspath(snakemake.log.run) + " 2>&1"
-print("## "+command)
 f = open(snakemake.log.run, 'at')
 f.write("## COMMAND: "+command+"\n")
 f.close()
