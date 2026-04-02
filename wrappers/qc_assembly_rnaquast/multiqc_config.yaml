@@ -1,0 +1,26 @@
+custom_data:
+ rnaquast_table:
+  parent_id: rnaquast_report
+  parent_name: 'rnaQUAST report'
+  section_name: 'rnaQUAST summary table'
+  description: 'This table contains merged data from short_report.txt and comparison_output/basic_metrics.txt of rnaQUAST tool.'
+  plot_type: table
+  format: tsv
+  pconfig:
+   title: 'rnaQUAST statistics'
+ transcript_length:
+  parent_id: rnaquast_report
+  parent_name: 'rnaQUAST report'
+  section_name: 'rnaQUAST transcript length'
+ Nx:
+  parent_id: rnaquast_report
+  parent_name: 'rnaQUAST report'
+  section_name: 'rnaQUAST transcript Nx'
+sp:
+ rnaquast_table:
+  fn: full_report_t.tsv
+ transcript_length:
+  fn: transcript_length_all.png
+ Nx:
+  fn: Nx_all.png
+ignore_images: false
